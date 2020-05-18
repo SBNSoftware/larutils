@@ -89,12 +89,12 @@ fi
 set -x
 cd $MRB_SOURCE  || exit 1
 # make sure we get a read-only copy
-mrb g -r -t $SBND sbndcode || exit 1
+mrb g -r -t $SBND --github-org SBNSoftware --repo-type github sbndcode || exit 1
 
 # Extract ubutil version from sbndcode product_deps
 sbndutil_version=`grep sbndutil $MRB_SOURCE/sbndcode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
 echo "sbnduitil version: $sbndutil_version"
-mrb g -r -t $sbndutil_version sbndutil || exit 1
+mrb g -r -t $sbndutil_version --github-org SBNSoftware --repo-type github sbndutil || exit 1
 
 cd $MRB_BUILDDIR || exit 1
 mrbsetenv || exit 1
