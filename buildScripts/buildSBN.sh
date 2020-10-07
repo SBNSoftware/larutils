@@ -1,11 +1,11 @@
 #!/bin/bash
 
-# build sbndcode and sbndutil
+# build sbncode
 # use mrb
 # designed to work on Jenkins
 # this is a proof of concept script
 
-echo "sbndcode version: $SBND"
+echo "sbncode version: $SBN"
 echo "base qualifiers: $QUAL"
 echo "larsoft qualifiers: $LARSOFT_QUAL"
 echo "build type: $BUILDTYPE"
@@ -57,7 +57,7 @@ if ! uname | grep -q Darwin; then
   setup git || exit 1
 fi
 setup gitflow || exit 1
-export MRB_PROJECT=sbnd
+export MRB_PROJECT=sbn
 echo "Mrb path:"
 which mrb
 
@@ -67,7 +67,7 @@ mkdir -p $WORKSPACE/temp || exit 1
 mkdir -p $WORKSPACE/copyBack || exit 1
 rm -f $WORKSPACE/copyBack/* || exit 1
 cd $WORKSPACE/temp || exit 1
-mrb newDev  -v $SBND -q $QUAL:$BUILDTYPE || exit 1
+mrb newDev  -v $SBN -q $QUAL:$BUILDTYPE || exit 1
 
 set +x
 source localProducts*/setup || exit 1
@@ -89,30 +89,31 @@ fi
 set -x
 cd $MRB_SOURCE  || exit 1
 # make sure we get a read-only copy
-mrb g -r -t $SBND sbndcode || exit 1
+mrb g -r -t $SBN sbncode || exit 1
 
-# Extract ubutil version from sbndcode product_deps
-sbndutil_version=`grep sbndutil $MRB_SOURCE/sbndcode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
-echo "sbnduitil version: $sbndutil_version"
-mrb g -r -t $sbndutil_version sbndutil || exit 1
+# Extract sbnobj version from sbncode product_deps                                                                                                                                               
+sbnobj_version=`grep sbnobj $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+echo "sbnobj version: $sbnobj_version"
+mrb g -r -t $sbnobj_version sbnobj || exit 1
+
+##temp for local test
+startDir=$(pwd)
+cd sbnobj
+git checkout Release2020A_00 || exit 1
+cd $startDir
 
 cd $MRB_BUILDDIR || exit 1
 mrbsetenv || exit 1
 mrb b -j$ncores || exit 1
 if uname | grep -q Linux; then
-  cp /usr/lib64/libXmu.so.6 sbndcode/lib
+  cp /usr/lib64/libXmu.so.6 sbncode/lib
 fi
-mrb mp -n sbnd -- -j$ncores || exit 1
+mrb mp -n sbn -- -j$ncores || exit 1
 
-# add sbnd_data to the manifest
-
-manifest=sbnd-*_MANIFEST.txt
-sbnd_data_version=`grep sbnd_data $MRB_SOURCE/sbndcode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
-sbnd_data_dot_version=`echo ${sbnd_data_version} | sed -e 's/_/./g' | sed -e 's/^v//'`
-echo "sbnd_data          ${sbnd_data_version}       sbnd_data-${sbnd_data_dot_version}-noarch.tar.bz2" >>  $manifest
+manifest=sbn-*_MANIFEST.txt
 
 # Extract larsoft version from product_deps.
-larsoft_version=`grep larsoft $MRB_SOURCE/sbndcode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+larsoft_version=`grep larsoft $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
 larsoft_dot_version=`echo ${larsoft_version} |  sed -e 's/_/./g' | sed -e 's/^v//'`
 
 # Extract flavor.
@@ -150,11 +151,11 @@ fi
 # Save artifacts.
 
 mv *.bz2  $WORKSPACE/copyBack/ || exit 1
-manifest=sbnd-*_MANIFEST.txt
+manifest=sbn-*_MANIFEST.txt
 if [ -f $manifest ]; then
   mv $manifest  $WORKSPACE/copyBack/ || exit 1
 fi
-cp $MRB_BUILDDIR/sbndcode/releaseDB/*.html $WORKSPACE/copyBack/
+cp $MRB_BUILDDIR/sbncode/releaseDB/*.html $WORKSPACE/copyBack/
 ls -l $WORKSPACE/copyBack/
 cd $WORKSPACE || exit 1
 rm -rf $WORKSPACE/temp || exit 1
