@@ -91,7 +91,7 @@ cd $MRB_SOURCE  || exit 1
 # make sure we get a read-only copy
 mrb g -r -t $SBN sbncode || exit 1
 
-# Extract sbnobj version from sbncode product_deps                                                                                                                                               
+# Extract sbnobj version from sbncode product_deps
 sbnobj_version=`grep sbnobj $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
 echo "sbnobj version: $sbnobj_version"
 mrb g -r -t $sbnobj_version sbnobj || exit 1
