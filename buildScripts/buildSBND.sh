@@ -111,9 +111,10 @@ sbnd_data_version=`grep sbnd_data $MRB_SOURCE/sbndcode/ups/product_deps | grep -
 sbnd_data_dot_version=`echo ${sbnd_data_version} | sed -e 's/_/./g' | sed -e 's/^v//'`
 echo "sbnd_data          ${sbnd_data_version}       sbnd_data-${sbnd_data_dot_version}-noarch.tar.bz2" >>  $manifest
 
-# Extract larsoft version from product_deps.
-larsoft_version=`grep larsoft $MRB_SOURCE/sbndcode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
-larsoft_dot_version=`echo ${larsoft_version} |  sed -e 's/_/./g' | sed -e 's/^v//'`
+# Extract sbncode version from product_deps.
+sbncode_version=`grep sbncode $MRB_SOURCE/sbndcode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+sbncode_dot_version=`echo ${sbncode_version} |  sed -e 's/_/./g' | sed -e 's/^v//'`
+
 
 # Extract flavor.
 
@@ -124,17 +125,17 @@ else
   flvr=`ups flavor -4`
 fi
 
-# Construct name of larsoft manifest.
+# Construct name of sbncode manifest.
 
-larsoft_hyphen_qual=`echo $LARSOFT_QUAL | tr : - | sed 's/-noifdh//'`
-larsoft_manifest=larsoft-${larsoft_dot_version}-${flvr}-${larsoft_hyphen_qual}-${BUILDTYPE}_MANIFEST.txt
-echo "Larsoft manifest:"
-echo $larsoft_manifest
+sbncode_hyphen_qual=`echo $QUAL | tr : - | sed 's/-noifdh//'`
+sbncode_manifest=sbn-${sbncode_dot_version}-${flvr}-${sbncode_hyphen_qual}-${BUILDTYPE}_MANIFEST.txt
+echo "sbncode manifest:"
+echo $sbncode_manifest
 echo
 
-# Fetch larsoft manifest from scisoft and append to sbndcode manifest.
+# Fetch sbncode manifest from scisoft and append to sbndcode manifest.
 
-curl --fail --silent --location --insecure http://scisoft.fnal.gov/scisoft/bundles/larsoft/${larsoft_version}/manifest/${larsoft_manifest} >> $manifest || exit 1
+curl --fail --silent --location --insecure http://scisoft.fnal.gov/scisoft/bundles/sbn/${sbncode_version}/manifest/${sbncode_manifest} >> $manifest || exit 1
 
 if echo $QUAL | grep -q noifdh; then
   if uname | grep -q Darwin; then
