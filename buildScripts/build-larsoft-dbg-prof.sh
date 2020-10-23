@@ -50,16 +50,13 @@ oIFS=${IFS}; IFS=:; quals=(${qual_set//-/:}); IFS=$oIFS; unset oIFS
 
 labels=()
 for onequal in "${quals[@]}"; do
-  case ${onequal} in
-    e[679]|e1[0-9]|c[0-9])
-      basequal=${onequal}
-      ;;
-    s7[0-9]|s8[0-9]|s9[0-9])
-      squal=${onequal}
-      ;;
-    *)
+  if [[ "${onequal}" =~ ^([ec])([0-9]+)$ ]]; then
+    basequal=${onequal}
+  elif [[ "${onequal}" =~ ^(s)([1-9][0-9]+)$ ]]; then
+    squal=${onequal}
+  else
       labels+=${onequal}
-  esac
+  fi
 done
 
 # create copyBack so artifact copy does not fail on early exit

@@ -50,17 +50,16 @@ build_type="${3:-${BUILDTYPE}}"
 
 labels=()
 for onequal in "${quals[@]}"; do
-  case ${onequal} in
-    e[679]|e1[0-9]|c[0-9])
-      basequal=${onequal}
-      ;;
-    s6[0-9]|s7[0-9]|s8[0-9]|s9[0-9])
-      squal=${onequal}
-      ;;
-    *)
+  if [[ "${onequal}" =~ ^([ec])([0-9]+)$ ]]; then
+    basequal=${onequal}
+  elif [[ "${onequal}" =~ ^(s)([1-9][0-9]+)$ ]]; then
+    squal=${onequal}
+  else
       labels+=${onequal}
-  esac
+  fi
 done
+
+echo "basequal ${basequal} squal ${squal} labels ${labels}"
 
 case ${build_type} in
   debug)  ;;
