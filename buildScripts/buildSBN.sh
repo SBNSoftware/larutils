@@ -7,7 +7,7 @@
 
 echo "sbncode version: $SBN"
 echo "base qualifiers: $QUAL"
-echo "larsoft qualifiers: $LARSOFT_QUAL"
+echo "s qualifier: $SQUAL"
 echo "build type: $BUILDTYPE"
 echo "workspace: $WORKSPACE"
 
@@ -25,23 +25,25 @@ if [ $ncores -lt 1 ]; then
 fi
 echo "Building using $ncores cores."
 
-# Environment setup, uses /grid/fermiapp or cvmfs.
+# Environment setup, uses cvmfs.
 
-echo "ls /cvmfs/sbnd.opensciencegrid.org"
-ls /cvmfs/sbnd.opensciencegrid.org
+echo "ls /cvmfs/larsoft.opensciencegrid.org"
+ls /cvmfs/larsoft.opensciencegrid.org
 echo
 
-if [ -f /grid/fermiapp/products/sbnd/setup_sbnd.sh ]; then
-  source /grid/fermiapp/products/sbnd/setup_sbnd.sh || exit 1
-elif [ -f /cvmfs/sbnd.opensciencegrid.org/products/setup_sbnd.sh ]; then
+if [ -f /cvmfs/larsoft.opensciencegrid.org/products/setup ]; then
   if [ -x /cvmfs/grid.cern.ch/util/cvmfs-uptodate ]; then
-    /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/sbnd.opensciencegrid.org/products
+    /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/larsoft.opensciencegrid.org/products
   fi
-  source /cvmfs/sbnd.opensciencegrid.org/products/setup_sbnd.sh || exit 1
+  source /cvmfs/larsoft.opensciencegrid.org/products/setup || exit 1
 else
   echo "No setup file found."
   exit 1
 fi
+
+#setup mrb
+setup mrb || exit 1
+
 # skip around a version of mrb that does not work on macOS
 
 if [ `uname` = Darwin ]; then
@@ -72,18 +74,8 @@ mrb newDev  -v $SBN -q $QUAL:$BUILDTYPE || exit 1
 set +x
 source localProducts*/setup || exit 1
 
-# some shenanigans so we can use getopt v1_1_6
 if [ `uname` = Darwin ]; then
-#  cd $MRB_INSTALL
-#  curl --fail --silent --location --insecure -O http://scisoft.fnal.gov/scisoft/packages/getopt/v1_1_6/getopt-1.1.6-d13-x86_64.tar.bz2 || \
-#      { cat 1>&2 <<EOF
-#ERROR: pull of http://scisoft.fnal.gov/scisoft/packages/getopt/v1_1_6/getopt-1.1.6-d13-x86_64.tar.bz2 failed
-#EOF
-#        exit 1
-#      }
-#  tar xf getopt-1.1.6-d13-x86_64.tar.bz2 || exit 1
   setup getopt v1_1_6  || exit 1
-#  which getopt
 fi
 
 set -x
@@ -96,11 +88,10 @@ sbnobj_version=`grep sbnobj $MRB_SOURCE/sbncode/ups/product_deps | grep -v quali
 echo "sbnobj version: $sbnobj_version"
 mrb g -r -t $sbnobj_version sbnobj || exit 1
 
-##temp for local test
-startDir=$(pwd)
-cd sbnobj
-git checkout Release2020A_00 || exit 1
-cd $startDir
+# Extract sbndaq_artdaq_core version from sbncode product_deps
+sbndaq_artdaq_core_version=`grep sbndaq_artdaq_core $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+echo "sbndaq_artdaq_core version: $sbndaq_artdaq_core_version"
+mrb g -r -t $sbndaq_artdaq_core_version sbndaq_artdaq_core || exit 1
 
 cd $MRB_BUILDDIR || exit 1
 mrbsetenv || exit 1
@@ -127,13 +118,13 @@ fi
 
 # Construct name of larsoft manifest.
 
-larsoft_hyphen_qual=`echo $LARSOFT_QUAL | tr : - | sed 's/-noifdh//'`
+larsoft_hyphen_qual=`echo $SQUAL:$QUAL | tr : - | sed 's/-noifdh//'`
 larsoft_manifest=larsoft-${larsoft_dot_version}-${flvr}-${larsoft_hyphen_qual}-${BUILDTYPE}_MANIFEST.txt
 echo "Larsoft manifest:"
 echo $larsoft_manifest
 echo
 
-# Fetch larsoft manifest from scisoft and append to sbndcode manifest.
+# Fetch larsoft manifest from scisoft and append to sbncode manifest.
 
 curl --fail --silent --location --insecure http://scisoft.fnal.gov/scisoft/bundles/larsoft/${larsoft_version}/manifest/${larsoft_manifest} >> $manifest || exit 1
 
