@@ -37,7 +37,17 @@ if [ -f /cvmfs/larsoft.opensciencegrid.org/products/setup ]; then
   fi
   source /cvmfs/larsoft.opensciencegrid.org/products/setup || exit 1
 else
-  echo "No setup file found."
+  echo "No larsoft setup file found."
+  exit 1
+fi
+
+if [ -f /cvmfs/sbn.opensciencegrid.org/products/sbn/setup ]; then
+  if [ -x /cvmfs/grid.cern.ch/util/cvmfs-uptodate ]; then
+    /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/sbn.opensciencegrid.org/products/sbn
+  fi
+  source /cvmfs/sbn.opensciencegrid.org/products/sbn/setup || exit 1
+else
+  echo "No sbn setup file found."
   exit 1
 fi
 
