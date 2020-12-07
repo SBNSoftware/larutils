@@ -163,28 +163,34 @@ rm -rf ${srcdir}
 mkdir -p ${srcdir} || exit 1
 mkdir -p ${blddir} || exit 1
 
+buildFW="${working_dir}/artutilscripts/tools/buildFW"
+
 cd ${blddir} || exit 1
-curl --fail --silent --location --insecure -O http://scisoft.fnal.gov/scisoft/bundles/tools/buildFW || exit 1
-chmod +x buildFW
+
+if [ -z "${buildFW}" ]; then
+  curl --fail --silent --location --insecure -O http://scisoft.fnal.gov/scisoft/bundles/tools/buildFW || exit 1
+  chmod +x buildFW
+  buildFW="${blddir}/buildFW"
+fi
 
 cd ${blddir} || exit 1
 echo
 echo "begin build"
 echo
 (( ${#labels[@]} > 0 )) && lopt=-l
-./buildFW -t -b ${basequal} \
+${buildFW} -t -b ${basequal} \
   ${lopt} $(IFS=:; printf '%s' "${labels[*]}") \
   ${blddir} ${build_type} lar_product_stack-${version} || \
  { mv ${blddir}/*.log  "${working_dir}/copyBack/"
    exit 1
  }
-./buildFW -t -b ${basequal} -s ${squal} \
+${buildFW} -t -b ${basequal} -s ${squal} \
   ${lopt} $(IFS=:; printf '%s' "${labels[*]}") \
   ${blddir} ${build_type} larbase-${version} || \
  { mv ${blddir}/*.log  "${working_dir}/copyBack/"
    exit 1
  }
-./buildFW -t -b ${basequal} -s ${squal} \
+${buildFW} -t -b ${basequal} -s ${squal} \
   ${lopt} $(IFS=:; printf '%s' "${labels[*]}") \
   ${blddir} ${build_type} larsoft-${version} || \
  { mv ${blddir}/*.log  "${working_dir}/copyBack/"
@@ -192,7 +198,7 @@ echo
  }
 # larsoftobj
 objver=`ls larsoftobj-cfg* | cut -f3 -d"-" | sed -e 's/\./_/g'`
-./buildFW -t -b ${basequal} \
+${buildFW} -t -b ${basequal} \
   ${lopt} $(IFS=:; printf '%s' "${labels[*]}") \
   ${blddir} ${build_type} larsoftobj-${objver} || \
  { mv ${blddir}/*.log  "${working_dir}/copyBack/"
@@ -208,7 +214,7 @@ curl --fail --silent --location --insecure -O ${cfgfile} || have_wirecfg="no"
 echo "have_wirecfg is ${have_wirecfg}"
 if [[ ${have_wirecfg} == "yes" ]]; then
  echo "building larwire ${wirever}"
- ./buildFW -t -b ${basequal} -s ${squal} \
+ ${buildFW} -t -b ${basequal} -s ${squal} \
   ${lopt} $(IFS=:; printf '%s' "${labels[*]}") \
   ${blddir} ${build_type} larwire-${wirever} || \
  { mv ${blddir}/*.log  "${working_dir}/copyBack/"

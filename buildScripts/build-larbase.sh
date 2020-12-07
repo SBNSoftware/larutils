@@ -57,6 +57,8 @@ for onequal in "${quals[@]}"; do
   fi
 done
 
+echo "basequal ${basequal} squal ${squal} labels ${labels}"
+
 case ${build_type} in
   debug) qflag="-d" ;;
   prof) qflag="-p" ;;
@@ -154,21 +156,27 @@ rm -rf ${srcdir}
 mkdir -p ${srcdir} || exit 1
 mkdir -p ${blddir} || exit 1
 
+buildFW="${working_dir}/artutilscripts/tools/buildFW"
+
 cd ${blddir} || exit 1
-curl --fail --silent --location --insecure -O http://scisoft.fnal.gov/scisoft/bundles/tools/buildFW || exit 1
-chmod +x buildFW
+
+if [ -z "${buildFW}" ]; then
+  curl --fail --silent --location --insecure -O http://scisoft.fnal.gov/scisoft/bundles/tools/buildFW || exit 1
+  chmod +x buildFW
+  buildFW="${blddir}/buildFW"
+fi
 
 echo
 echo "begin build"
 echo
 (( ${#labels[@]} > 0 )) && lopt=-l
-./buildFW -t -b ${basequal} \
+${buildFW} -t -b ${basequal} \
   ${lopt} $(IFS=:; printf '%s' "${labels[*]}") \
   ${blddir} ${build_type} lar_product_stack-${version} || \
  { mv ${blddir}/*.log  "${working_dir}/copyBack/"
    exit 1
  }
-./buildFW -t -b ${basequal} -s ${squal} \
+${buildFW} -t -b ${basequal} -s ${squal} \
   ${lopt} $(IFS=:; printf '%s' "${labels[*]}") \
   ${blddir} ${build_type} larbase-${version} || \
  { mv ${blddir}/*.log  "${working_dir}/copyBack/"
