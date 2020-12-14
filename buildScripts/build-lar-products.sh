@@ -48,13 +48,13 @@ build_type="${3:-${BUILDTYPE}}"
 
 labels=()
 for onequal in "${quals[@]}"; do
-  case ${onequal} in
-    e[679]|e1[0-9]|c[0-9])
-      basequal=${onequal}
-      ;;
-    *)
+  if [[ "${onequal}" =~ ^([ec])([0-9]+)$ ]]; then
+    basequal=${onequal}
+  elif [[ "${onequal}" =~ ^(s)([1-9][0-9]+)$ ]]; then
+    squal=${onequal}
+  else
       labels+=${onequal}
-  esac
+  fi
 done
 
 case ${build_type} in
@@ -157,16 +157,22 @@ rm -rf ${srcdir}
 mkdir -p ${srcdir} || exit 1
 mkdir -p ${blddir} || exit 1
 
+buildFW="${working_dir}/artutilscripts/tools/buildFW"
+
 cd ${blddir} || exit 1
-curl --fail --silent --location --insecure -O http://scisoft.fnal.gov/scisoft/bundles/tools/buildFW || exit 1
-chmod +x buildFW
+
+if [ -z "${buildFW}" ]; then
+  curl --fail --silent --location --insecure -O http://scisoft.fnal.gov/scisoft/bundles/tools/buildFW || exit 1
+  chmod +x buildFW
+  buildFW="${blddir}/buildFW"
+fi
 
 cd ${blddir} || exit 1
 echo
 echo "begin build"
 echo
 (( ${#labels[@]} > 0 )) && lopt=-l
-./buildFW -t -b ${basequal} \
+${buildFW} -t -b ${basequal} \
   ${lopt} $(IFS=:; printf '%s' "${labels[*]}") \
   ${blddir} ${build_type} lar_product_stack-${version} || \
  { mv ${blddir}/*.log  "${working_dir}/copyBack/"
