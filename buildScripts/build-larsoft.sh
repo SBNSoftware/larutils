@@ -43,7 +43,6 @@ OPTIND=1
 
 working_dir="${WORKSPACE:-$(pwd)}"
 version="${1:-${LARVER}}"
-#objver=${LAROBJ}
 qual_set="${2:-${QUAL}}"
 oIFS=${IFS}; IFS=:; quals=(${qual_set//-/:}); IFS=$oIFS; unset oIFS
 build_type="${3:-${BUILDTYPE}}"
