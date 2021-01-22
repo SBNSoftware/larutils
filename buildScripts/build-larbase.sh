@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# pull source code in $WORKSPACE/source
-# build in $WORKSPACE/build
-# copyback directory is $WORKSPACE/copyBack
+# pull source code in ${working_dir}/source
+# build in ${working_dir}/build
+# copyback directory is ${working_dir}/copyBack
 
 usage()
 {
@@ -60,8 +60,8 @@ done
 echo "basequal ${basequal} squal ${squal} labels ${labels}"
 
 case ${build_type} in
-  debug) qflag="-d" ;;
-  prof) qflag="-p" ;;
+  debug)  ;;
+  prof)  ;;
   *)
     usage
     exit 1
@@ -123,14 +123,14 @@ if [[ `uname -s` == Darwin ]]; then
       exit 0
     fi
   fi
-  if have_label py3; then
-    msg="We are not building for Python3 on Darwin."
+  if have_label py2; then
+    msg="We are not building for Python2 on Darwin."
     echo "${msg}"
     echo "${msg}" > "${working_dir}/copyBack/skipping_build"
     exit 0
   fi
-elif [[ "${flvr}" == slf6 ]] && have_label py3; then
-    msg="Python3 builds not supported on SLF6."
+elif [[ "${flvr}" == slf6 ]]; then
+    msg="We are not building on SLF6."
     echo "${msg}"
     echo "${msg}" > "${working_dir}/copyBack/skipping_build"
     exit 0
@@ -138,7 +138,7 @@ fi
 
 dotver=`echo ${version} | sed -e 's/_/./g' | sed -e 's/^v//'`
 
-echo "building the larbase base distribution for ${version} ${dotver} ${qual_set} ${build_type}"
+echo "building the larbase distribution for ${version} ${dotver} ${qual_set} ${build_type}"
 
 echo "build flavor is ${flvr}"
 echo ""
@@ -166,6 +166,7 @@ if [ -z "${buildFW}" ]; then
   buildFW="${blddir}/buildFW"
 fi
 
+cd ${blddir} || exit 1
 echo
 echo "begin build"
 echo
@@ -191,8 +192,8 @@ mv ${blddir}/*source* ${srcdir}/
 mv ${blddir}/g*noarch* ${srcdir}/
 mv ${blddir}/larsoft_data*.bz2 ${srcdir}/
 #
-mv ${blddir}/*.bz2  $WORKSPACE/copyBack/
-mv ${blddir}/*.txt  $WORKSPACE/copyBack/
+mv ${blddir}/*.bz2  "${working_dir}/copyBack/"
+mv ${blddir}/*.txt  "${working_dir}/copyBack/"
 rm -rf ${srcdir}
 rm -rf ${blddir}
 
