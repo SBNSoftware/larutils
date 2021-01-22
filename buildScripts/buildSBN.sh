@@ -41,10 +41,15 @@ else
   exit 1
 fi
 
+echo "ls /cvmfs/sbn.opensciencegrid.org"
+ls /cvmfs/sbn.opensciencegrid.org
+echo
+
 if [ -f /cvmfs/sbn.opensciencegrid.org/products/sbn/setup ]; then
   if [ -x /cvmfs/grid.cern.ch/util/cvmfs-uptodate ]; then
     /cvmfs/grid.cern.ch/util/cvmfs-uptodate /cvmfs/sbn.opensciencegrid.org/products/sbn
   fi
+  echo "Setting up sbn cvmfs"
   source /cvmfs/sbn.opensciencegrid.org/products/sbn/setup || exit 1
 else
   echo "No sbn setup file found."
