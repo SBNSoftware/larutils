@@ -5,10 +5,7 @@
 # designed to work on Jenkins
 # this is a proof of concept script
 
-echo "sbncode version: $SBN_VERSION"
-echo "sbncode tag: $SBN"
-echo "sbnobj tag: $SBNOBJ"
-echo "sbndaq_artdaq_core tag: $SBNDAQ_ARTDAQ_CORE"
+echo "sbnana version: $SBN"
 echo "base qualifiers: $QUAL"
 echo "s qualifier: $SQUAL"
 echo "build type: $BUILDTYPE"
@@ -62,7 +59,7 @@ if ! uname | grep -q Darwin; then
   setup git || exit 1
 fi
 setup gitflow || exit 1
-export MRB_PROJECT=sbn
+export MRB_PROJECT=sbnana
 echo "Mrb path:"
 which mrb
 
@@ -72,7 +69,7 @@ mkdir -p $WORKSPACE/temp || exit 1
 mkdir -p $WORKSPACE/copyBack || exit 1
 rm -f $WORKSPACE/copyBack/* || exit 1
 cd $WORKSPACE/temp || exit 1
-mrb newDev  -v $SBN_VERSION -q $QUAL:$BUILDTYPE || exit 1
+mrb newDev  -v $SBN -q $QUAL:$BUILDTYPE || exit 1
 
 set +x
 source localProducts*/setup || exit 1
@@ -80,21 +77,12 @@ source localProducts*/setup || exit 1
 set -x
 cd $MRB_SOURCE  || exit 1
 # make sure we get a read-only copy
-mrb g -r sbncode@$SBN || exit 1
+mrb g -r sbnana@$SBN || exit 1
 
-if [ -z "$SBNOBJ" ]; then
-    # Extract sbnobj version from sbncode product_deps
-    SBNOBJ=`grep sbnobj $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
-fi
-echo "sbnobj version: $SBNOBJ"
-mrb g -r sbnobj@$SBNOBJ || exit 1
-
-if [ -z "$SBNDAQ_ARTDAQ_CORE" ]; then
-    # Extract sbndaq_artdaq_core version from sbncode product_deps
-    SBNDAQ_ARTDAQ_CORE=`grep sbndaq_artdaq_core $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
-fi
-echo "sbndaq_artdaq_core version: $SBNDAQ_ARTDAQ_CORE"
-mrb g -r sbndaq_artdaq_core@$SBNDAQ_ARTDAQ_CORE || exit 1
+# Extract sbananobj version from sbncode product_deps
+sbnanaobj_version=`grep sbnanaobj $MRB_SOURCE/sbnana/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+echo "sbnanaobj version: $sbnanaobj_version"
+mrb g -r -t $sbnanaobj_version sbnanaobj || exit 1
 
 cd $MRB_BUILDDIR || exit 1
 mrbsetenv || exit 1
@@ -102,42 +90,13 @@ mrb b -j$ncores || exit 1
 if uname | grep -q Linux; then
   cp /usr/lib64/libXmu.so.6 sbncode/lib
 fi
-mrb mp -n sbn -- -j$ncores || exit 1
+mrb mp -n sbnana -- -j$ncores || exit 1
 
-manifest=sbn-*_MANIFEST.txt
-
-# Extract larsoft version from product_deps.
-larsoft_version=`grep larsoft $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
-larsoft_dot_version=`echo ${larsoft_version} |  sed -e 's/_/./g' | sed -e 's/^v//'`
-
-# Extract flavor.
-flvr=`ups flavor -4`
-
-# Construct name of larsoft manifest.
-
-larsoft_hyphen_qual=`echo $SQUAL:$QUAL | tr : - | sed 's/-noifdh//'`
-larsoft_manifest=larsoft-${larsoft_dot_version}-${flvr}-${larsoft_hyphen_qual}-${BUILDTYPE}_MANIFEST.txt
-echo "Larsoft manifest:"
-echo $larsoft_manifest
-echo
-
-# Fetch larsoft manifest from scisoft and append to sbncode manifest.
-
-curl --fail --silent --location --insecure http://scisoft.fnal.gov/scisoft/bundles/larsoft/${larsoft_version}/manifest/${larsoft_manifest} >> $manifest || exit 1
-
-if echo $QUAL | grep -q noifdh; then
-   # Delete the manifest entirely.
-  rm -f $manifest
-fi
 
 # Save artifacts.
 
 mv *.bz2  $WORKSPACE/copyBack/ || exit 1
-manifest=sbn-*_MANIFEST.txt
-if [ -f $manifest ]; then
-  mv $manifest  $WORKSPACE/copyBack/ || exit 1
-fi
-cp $MRB_BUILDDIR/sbncode/releaseDB/*.html $WORKSPACE/copyBack/
+cp $MRB_BUILDDIR/sbnana/releaseDB/*.html $WORKSPACE/copyBack/
 ls -l $WORKSPACE/copyBack/
 cd $WORKSPACE || exit 1
 rm -rf $WORKSPACE/temp || exit 1
