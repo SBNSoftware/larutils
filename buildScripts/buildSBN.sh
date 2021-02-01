@@ -8,6 +8,7 @@
 echo "sbncode version: $SBN_VERSION"
 echo "sbncode tag: $SBN"
 echo "sbnobj tag: $SBNOBJ"
+echo "sbnanaobj tag: $SBNANAOBJ"
 echo "sbndaq_artdaq_core tag: $SBNDAQ_ARTDAQ_CORE"
 echo "base qualifiers: $QUAL"
 echo "s qualifier: $SQUAL"
@@ -88,6 +89,13 @@ if [ -z "$SBNOBJ" ]; then
 fi
 echo "sbnobj version: $SBNOBJ"
 mrb g -r sbnobj@$SBNOBJ || exit 1
+
+if [ -z "$SBNANAOBJ" ]; then
+    # Extract sbnobj version from sbncode product_deps
+    SBNANAOBJ=`grep sbnanaobj $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+fi
+echo "sbnanaobj version: $SBNANAOBJ"
+mrb g -r sbnanaobj@$SBNANAOBJ || exit 1
 
 if [ -z "$SBNDAQ_ARTDAQ_CORE" ]; then
     # Extract sbndaq_artdaq_core version from sbncode product_deps

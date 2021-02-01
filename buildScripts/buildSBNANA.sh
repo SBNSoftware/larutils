@@ -5,7 +5,9 @@
 # designed to work on Jenkins
 # this is a proof of concept script
 
-echo "sbnana version: $SBN"
+echo "sbnana version: $SBNANA_VERSION"
+echo "sbnana tag/commit/branch: $SBNANA"
+#echo "sbnanaobj tag/commit/branch: $SBNANAOBJ"
 echo "base qualifiers: $QUAL"
 echo "s qualifier: $SQUAL"
 echo "build type: $BUILDTYPE"
@@ -69,7 +71,7 @@ mkdir -p $WORKSPACE/temp || exit 1
 mkdir -p $WORKSPACE/copyBack || exit 1
 rm -f $WORKSPACE/copyBack/* || exit 1
 cd $WORKSPACE/temp || exit 1
-mrb newDev  -v $SBN -q $QUAL:$BUILDTYPE || exit 1
+mrb newDev -v $SBNANA_VERSION -q $QUAL:$BUILDTYPE || exit 1
 
 set +x
 source localProducts*/setup || exit 1
@@ -77,12 +79,14 @@ source localProducts*/setup || exit 1
 set -x
 cd $MRB_SOURCE  || exit 1
 # make sure we get a read-only copy
-mrb g -r sbnana@$SBN || exit 1
+mrb g -r sbnana@$SBNANA || exit 1
 
-# Extract sbananobj version from sbncode product_deps
-sbnanaobj_version=`grep sbnanaobj $MRB_SOURCE/sbnana/ups/product_deps | grep -v qualifier | awk '{print $2}'`
-echo "sbnanaobj version: $sbnanaobj_version"
-mrb g -r -t $sbnanaobj_version sbnanaobj || exit 1
+#if [ -z "$SBNANAOBJ" ]; then
+#    # Extract sbananobj version from sbncode product_deps
+#    SBNANAOBJ=`grep sbnanaobj $MRB_SOURCE/sbnana/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+#fi
+#echo "sbnanaobj version: $SBNANAOBJ"
+#mrb g -r sbnanaobj@$SBNANAOBJ || exit 1
 
 cd $MRB_BUILDDIR || exit 1
 mrbsetenv || exit 1
