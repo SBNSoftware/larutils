@@ -96,10 +96,14 @@ if uname | grep -q Linux; then
 fi
 mrb mp -n sbnana -- -j$ncores || exit 1
 
+manifest=sbnana-*_MANIFEST.txt
 
 # Save artifacts.
 
 mv *.bz2  $WORKSPACE/copyBack/ || exit 1
+if [ -f $manifest ]; then
+  mv $manifest  $WORKSPACE/copyBack/ || exit 1
+fi
 cp $MRB_BUILDDIR/sbnana/releaseDB/*.html $WORKSPACE/copyBack/
 ls -l $WORKSPACE/copyBack/
 cd $WORKSPACE || exit 1
