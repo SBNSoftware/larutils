@@ -210,8 +210,6 @@ have_wirecfg="yes"
 cfgfile=http://scisoft.fnal.gov/scisoft/bundles/larwire/${wirever}/buildcfg/larwire-cfg-${wiredotver}
 echo "looking for ${cfgfile}"
 curl --fail --silent --location --insecure -O ${cfgfile} || have_wirecfg="no"
-# temporarily disable larwire build
-have_wirecfg="no"
 echo "have_wirecfg is ${have_wirecfg}"
 if [[ ${have_wirecfg} == "yes" ]]; then
  echo "building larwire ${wirever}"
