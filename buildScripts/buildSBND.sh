@@ -5,9 +5,9 @@
 # designed to work on Jenkins
 # this is a proof of concept script
 
-echo "sbndcode version: $SBND"
+echo "sbndcode version: $SBND_VERSION"
 echo "base qualifiers: $QUAL"
-echo "larsoft qualifiers: $LARSOFT_QUAL"
+echo "larsoft qualifiers: $SQUAL"
 echo "build type: $BUILDTYPE"
 echo "workspace: $WORKSPACE"
 
@@ -67,7 +67,7 @@ mkdir -p $WORKSPACE/temp || exit 1
 mkdir -p $WORKSPACE/copyBack || exit 1
 rm -f $WORKSPACE/copyBack/* || exit 1
 cd $WORKSPACE/temp || exit 1
-mrb newDev  -v $SBND -q $QUAL:$BUILDTYPE || exit 1
+mrb newDev  -v $SBND_VERSION -q $QUAL:$BUILDTYPE || exit 1
 
 set +x
 source localProducts*/setup || exit 1
@@ -89,12 +89,17 @@ fi
 set -x
 cd $MRB_SOURCE  || exit 1
 # make sure we get a read-only copy
-mrb g -r -t $SBND sbndcode || exit 1
+mrb g -r -b $SBND sbndcode || exit 1
 
-# Extract ubutil version from sbndcode product_deps
-sbndutil_version=`grep sbndutil $MRB_SOURCE/sbndcode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
-echo "sbnduitil version: $sbndutil_version"
-mrb g -r -t $sbndutil_version sbndutil || exit 1
+# get sbndutil, extracting version from sbndcode product_deps if not specified
+if [ -z "$SBNDUTIL" ]; then
+  sbndutil_version=`grep sbndutil $MRB_SOURCE/sbndcode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
+  echo "sbndutil version: $sbndutil_version"
+  mrb g -r -t $sbndutil_version sbndutil || exit 1
+else
+  echo "sbndutil version: $SBNDUTIL"
+  mrb g -r -b $SBNDUTIL sbndutil || exit 1
+fi
 
 cd $MRB_BUILDDIR || exit 1
 mrbsetenv || exit 1
