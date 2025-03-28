@@ -119,7 +119,10 @@ echo "sbndaq_artdaq_core version: $SBNDAQ_ARTDAQ_CORE"
 mrb g -r sbndaq_artdaq_core@$SBNDAQ_ARTDAQ_CORE || exit 1
 
 cd $MRB_BUILDDIR || exit 1
+# update the CMakeLists as well!
+mrb uc || exit 1
 mrbsetenv || exit 1
+mrb uc || exit 1
 mrb b -j$ncores || exit 1
 if uname | grep -q Linux; then
   cp /usr/lib64/libXmu.so.6 sbncode/lib
