@@ -89,7 +89,13 @@ if [ -z "$SBNALG" ]; then
     SBNALG=`grep sbnalg $MRB_SOURCE/sbncode/ups/product_deps | grep -v qualifier | awk '{print $2}'`
 fi
 echo "sbnalg version: $SBNALG"
-mrb g -r sbnalg@$SBNALG || exit 1
+# Switching off mrb for sbnalg until it's been added into list of known repos mrb can poll from
+#mrb g -r sbnalg@$SBNALG || exit 1
+# Use git clone instead...
+git clone https://github.com/SBNSoftware/sbnalg.git || exit 1
+cd $MRB_SOURCE/sbnalg || exit 1
+git checkout $SBNALG || exit 1
+cd - || exit 1
 
 if [ -z "$SBNOBJ" ]; then
     # Extract sbnobj version from sbncode product_deps
