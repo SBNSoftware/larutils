@@ -6,6 +6,7 @@
 # this is a proof of concept script
 
 echo "sbndcode version: $SBND_VERSION"
+echo "sbncode version: release/SBN2025A"
 echo "base qualifiers: $QUAL"
 echo "larsoft qualifiers: $SQUAL"
 echo "build type: $BUILDTYPE"
@@ -88,6 +89,9 @@ fi
 
 set -x
 cd $MRB_SOURCE  || exit 1
+# Check out sbncode.
+mrb g -r -b release/SBN2025A sbncode || exit 1
+
 # make sure we get a read-only copy
 mrb g -r -b $SBND sbndcode || exit 1
 
